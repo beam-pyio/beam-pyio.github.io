@@ -1,11 +1,11 @@
-name: my-blog
+version: "3.5"
 
 services:
-  server:
-    image: hugomods/hugo:exts
-    command: hugo server --bind 0.0.0.0
-    volumes:
-      - $PWD:/src
-      - $HOME/.cache/docker_compose_hugo_cache:/tmp/hugo_cache
-    ports:
-      - 1313:1313
+  hugo:
+      image: peaceiris/hugo:v0.123.0-full
+      command: server -D -F -E --poll 700ms --bind=0.0.0.0
+      container_name: hugo
+      volumes:
+        - $PWD:/src
+      ports:
+        - "1313:1313"

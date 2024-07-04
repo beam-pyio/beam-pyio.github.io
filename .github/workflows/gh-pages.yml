@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
@@ -39,7 +39,7 @@ jobs:
           extended: true
 
       - name: Build
-        run: hugo --minify --gc --enableGitInfo -b https://projects.razonyang.com/hugo-theme-bootstrap-skeleton/
+        run: hugo --minify --gc --enableGitInfo --buildFuture
 
       - name: Deploy 🚀
         uses: peaceiris/actions-gh-pages@v3

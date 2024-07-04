@@ -1,7 +1,7 @@
-baseURL: https://hbs-skeleton.netlify.app/
-title: Hugo Bootstrap Skeleton
+baseURL: /
+# title: Apache Beam Python I/O Connectors
 theme: github.com/razonyang/hugo-theme-bootstrap
-copyright: 'Copyright © 2016-{year} Razon Yang. All Rights Reserved.'
+# copyright: 'Copyright © 2024-{year} Beam PyIO. All Rights Reserved.'
 defaultContentLanguage: en
 # hasCJKLanguage: true # Uncomment it if your content contains Chinese/Japanese/Korean Languages.
 # defaultContentLanguageInSubdir: true
@@ -29,7 +29,7 @@ build:
 
 permalinks:
   news: /news/:year/:month/:title/
-  blog: /blog/:year/:month/:title/
+  # blog: /blog/:year/:month/:title/
 
 # module:
   # proxy: https://goproxy.cn
@@ -37,3 +37,13 @@ permalinks:
 # services:
 #   disqus:
 #     shortname: your-disqus-shortname
+
+markup:
+  highlight:
+    lineNos: true
+    lineNumbersInTable: false
+    noClasses: false
+  tableOfContents:
+    endLevel: 6
+    ordered: false
+    startLevel: 2
