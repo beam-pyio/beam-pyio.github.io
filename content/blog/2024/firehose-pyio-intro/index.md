@@ -1,6 +1,6 @@
 ---
 title: Introduction to Firehose PyIO Connector
-date: 2024-07-10
+date: 2024-07-11
 draft: false
 featured: true
 comment: false
@@ -24,19 +24,19 @@ images: []
 
 <!--more-->
 
-## Introduction
+## Usage
 
-The connector has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch preprocessing can also be useful to overcome the API limitation listed below.
+The connector has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
 - Each `PutRecordBatch` request supports up to 500 records. Each record in the request can be as large as 1,000 KB (before base64 encoding), up to a limit of 4 MB for the entire request. These limits cannot be changed.
 
 The transform also has options that control individual records or handling failed records.
 
-- *jsonify* - A flag that indicates whether to convert a record into Json. Note that a record should be of *bytes*, *bytearray* or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to *True*.
-- *multiline* - A flag that indicates whether to add a new line character (`\n`) to each record. It is useful to save records into a *CSV* or *Jsonline* file.
-- *max_retry* - The maximum number of retries when there is one or more failed records. Defaults to 3. 
+- _jsonify_ - A flag that indicates whether to convert a record into Json. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
+- _multiline_ - A flag that indicates whether to add a new line character (`\n`) to each record. It is useful to save records into a _CSV_ or _Jsonline_ file.
+- _max_trials_ - The maximum number of trials when there is one or more failed records - it defaults to 3. Note that failed records after all trials are returned, which allows users to determine how to handle them subsequently.
 
-### Main Usage
+### Example
 
 The example shows how to put records to a Firehose delivery stream that delivers data into an S3 bucket. We first need to create a delivery stream and related resources using the following Python script. The source can be found in the [**examples**](https://github.com/beam-pyio/firehose_pyio/tree/main/examples) folder of the connector repository.
 
@@ -115,12 +115,12 @@ if __name__ == "__main__":
 
 The main example script is constructed so that it (1) deletes all existing objects in the S3 bucket, (2) runs the example pipeline and (3) prints contents of the object(s) created by the pipeline.
 
-The pipeline begins with creating sample elements where each element is a dictionary that has the `id`, `name` and `created_at` (created date time) attributes. Then, we apply the following two transforms before we connect those elements into the main transform (`WriteToFirehose`).
+The pipeline begins with creating sample elements where each element is a dictionary that has the `id`, `name` and `created_at` (created date time) attributes. Then, we apply the following two transforms before we apply the main transform (`WriteToFirehose`).
 
 - `DatetimeToStr` - It converts the `created_at` attribute values into string because the Python `datetime` class cannot be converted into Json by default.
 - `BatchElements` - It batches the elements into the minimum batch size of 50. It prevents the individual dictionary element from being pushed into the `WriteToFirehose` transform.
 
-In the `WriteToFirehose` transform, it is configured that individual records are converted into Json (`jsonify=True`) as well as a new line character is added (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as Jsonline.
+In the `WriteToFirehose` transform, it is configured that individual records are converted into Json (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as Jsonline.
 
 ```python
 # examples/pipeline.py
@@ -219,7 +219,7 @@ def run(argv=None, save_main_session=True):
                 delivery_stream_name=known_args.stream_name,
                 jsonify=True,
                 multiline=True,
-                max_retry=3,
+                max_trials=3,
             )
         )
 
@@ -239,7 +239,7 @@ if __name__ == "__main__":
 ```
 
 
-We can run the pipeline while specifying arguments that configure pipeline options. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments as the package uses a dedicated pipeline option ([`FirehoseOptions`](https://github.com/beam-pyio/firehose_pyio/blob/main/src/firehose_pyio/options.py#L21)). Once the pipeline runs successfully, we can read the contents of the file object(s) that are created by the connector.
+We can run the pipeline while specifying arguments that configure pipeline options. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments as the package uses a dedicated pipeline option ([`FirehoseOptions`](https://github.com/beam-pyio/firehose_pyio/blob/main/src/firehose_pyio/options.py#L21)). Once the pipeline runs successfully, it reads the contents of the file object(s) that are created by the connector.
 
 ```bash
 python examples/pipeline.py \
@@ -272,3 +272,100 @@ python examples/pipeline.py \
 
 ### More Examples
 
+More usage examples can be found in the [unit testing cases](https://github.com/beam-pyio/firehose_pyio/blob/main/tests/io_test.py). Some of them are covered here.
+
+1. Only the list or tuple types are supported *PCollection* elements. In the following example, individual string elements are applied in the `WriteToFirehose`, and it raises the `TypeError`.
+
+```python
+def test_write_to_firehose_with_unsupported_types(self):
+    # only the list type is supported!
+    with self.assertRaises(TypeError):
+        with TestPipeline(options=self.pipeline_opts) as p:
+            (
+                p
+                | beam.Create(["one", "two", "three", "four"])
+                | WriteToFirehose(self.delivery_stream_name, True, False)
+            )
+```
+
+2. Jsonify the element if it is not of the bytes, bytearray or file-like object. In this example, the second element is a list of integers, and it should be converted into Json (`jsonify=True`). Or we can convert it into string manually.
+
+```python
+def test_write_to_firehose_with_list_elements(self):
+    with TestPipeline(options=self.pipeline_opts) as p:
+        output = (
+            p
+            | beam.Create([["one", "two", "three", "four"], [1, 2, 3, 4]])
+            | WriteToFirehose(self.delivery_stream_name, True, False)
+        )
+        assert_that(output, equal_to([]))
+
+    bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
+    self.assertSetEqual(
+        set(bucket_contents), set(['"one""two""three""four"', "1234"])
+    )
+```
+
+3. If an element is a tuple, its first element is applied to the `WriteToFirehose` transform.
+
+```python
+def test_write_to_firehose_with_tuple_elements(self):
+    with TestPipeline(options=self.pipeline_opts) as p:
+        output = (
+            p
+            | beam.Create([(1, ["one", "two", "three", "four"]), (2, [1, 2, 3, 4])])
+            | WriteToFirehose(self.delivery_stream_name, True, False)
+        )
+        assert_that(output, equal_to([]))
+
+    bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
+    self.assertSetEqual(
+        set(bucket_contents), set(['"one""two""three""four"', "1234"])
+    )
+```
+
+4. We can batch an element if it is not of the supported types. Note that, a new line character (`\n`) is appended to each record, and it is particularly useful for saving a CSV or Jsonline file to S3.
+
+```python
+def test_write_to_firehose_with_list_multilining(self):
+    with TestPipeline(options=self.pipeline_opts) as p:
+        output = (
+            p
+            | beam.Create(["one", "two", "three", "four"])
+            | BatchElements(min_batch_size=2, max_batch_size=2)
+            | WriteToFirehose(self.delivery_stream_name, False, True)
+        )
+        assert_that(output, equal_to([]))
+
+    bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
+    self.assertSetEqual(set(bucket_contents), set(["one\ntwo\n", "three\nfour\n"]))
+
+def test_write_to_firehose_with_tuple_multilining(self):
+    with TestPipeline(options=self.pipeline_opts) as p:
+        output = (
+            p
+            | beam.Create([(1, "one"), (2, "three"), (1, "two"), (2, "four")])
+            | GroupIntoBatches(batch_size=2)
+            | WriteToFirehose(self.delivery_stream_name, False, True)
+        )
+        assert_that(output, equal_to([]))
+
+    bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
+    self.assertSetEqual(set(bucket_contents), set(["one\ntwo\n", "three\nfour\n"]))
+```
+
+5. Failed records after all trials are returned. The following example configures only a single record is saved successfully into a delivery stream in each trial for 3 times. After all trials, the failed record (`four`) is returned from the `WriteToFirehose` transform. It is up to the user how to handle failed records.
+
+```python
+def test_write_to_firehose_retry_with_failed_elements(self):
+    with TestPipeline() as p:
+        output = (
+            p
+            | beam.Create(["one", "two", "three", "four"])
+            | BatchElements(min_batch_size=4)
+            | WriteToFirehose(
+                "non-existing-delivery-stream", False, False, 3, {"num_success": 1}
+            )
+        )
+        assert_that(output, equal_to(["four"]))
+```
