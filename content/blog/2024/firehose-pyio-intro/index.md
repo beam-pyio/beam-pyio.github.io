@@ -26,7 +26,13 @@ images: []
 
 ## Usage
 
-The connector has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
+The connector can be installed from PyPI.
+
+```bash
+pip install firehose_pyio
+```
+
+It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
 - Each `PutRecordBatch` request supports up to 500 records. Each record in the request can be as large as 1,000 KB (before base64 encoding), up to a limit of 4 MB for the entire request. These limits cannot be changed.
 
@@ -238,8 +244,7 @@ if __name__ == "__main__":
     print_bucket_contents(BUCKET_NAME)
 ```
 
-
-We can run the pipeline while specifying arguments that configure pipeline options. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments as the package uses a dedicated pipeline option ([`FirehoseOptions`](https://github.com/beam-pyio/firehose_pyio/blob/main/src/firehose_pyio/options.py#L21)). Once the pipeline runs successfully, it reads the contents of the file object(s) that are created by the connector.
+We can run the pipeline on any runner that supports the Python SDK. Below shows an example of running the example pipeline on the Apache Flink Runner. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments because the package has a dedicated pipeline option ([`FirehoseOptions`](https://github.com/beam-pyio/firehose_pyio/blob/main/src/firehose_pyio/options.py#L21)) that parses them. Once the pipeline runs successfully, the script continues to read the contents of the file object(s) that are created by the connector.
 
 ```bash
 python examples/pipeline.py \
@@ -248,26 +253,32 @@ python examples/pipeline.py \
     --aws_access_key_id=$AWS_ACCESS_KEY_ID \
     --aws_secret_access_key=$AWS_SECRET_ACCESS_KEY \
     --region_name=$AWS_DEFAULT_REGION
+```
 
-# >> delete existing objects...
-# >> start pipeline...
-# known_args - Namespace(stream_name='firehose-pyio-test', num_records=100)
-# pipeline options - {'runner': 'FlinkRunner', 'save_main_session': True, 'parallelism': 1, 'aws_access_key_id': 'xxxxxxxxxxxxxxxxxxxx', 'aws_secret_access_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'region_name': 'us-east-1'}
-# >> print bucket contents...
-# Key - 2024/07/09/05/firehose-pyio-test-1-2024-07-09-07-48-34-fa3cdd9f-0e49-4a8b-91de-bd5c313f3768
-# {"id": 10, "name": "aedvu", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 11, "name": "nlwpl", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 12, "name": "vsbyi", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 13, "name": "koeac", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 14, "name": "dyzbf", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 15, "name": "ervcy", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 16, "name": "kdksu", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 17, "name": "ijdvt", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 18, "name": "pkbok", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 19, "name": "cqqnb", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 20, "name": "lhgts", "created_at": "2024-07-09T17:48:26.865"}
-# {"id": 21, "name": "lgraa", "created_at": "2024-07-09T17:48:26.865"}
-# ...
+```bash
+>> start pipeline...
+known_args - Namespace(stream_name='firehose-pyio-test', num_records=100)
+pipeline options - {'runner': 'FlinkRunner', 'save_main_session': True, 'parallelism': 1, 'aws_access_key_id': 'xxxxxxxxxxxxxxxxxxxx', 'aws_secret_access_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'region_name': 'us-east-1'}
+>> print bucket contents...
+Key - 2024/07/21/01/firehose-pyio-test-1-2024-07-21-01-49-51-5fd0fc8d-b656-4f7b-9bc6-5039975d941f
+{"id": 50, "name": "amlis", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 51, "name": "bqvhr", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 52, "name": "stsbv", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 53, "name": "rttjg", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 54, "name": "avozb", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 55, "name": "fyesu", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 56, "name": "pvxlw", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 57, "name": "qyjlo", "created_at": "2024-07-21T11:49:32.536"}
+{"id": 58, "name": "smhns", "created_at": "2024-07-21T11:49:32.536"}
+...
+```
+
+Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrad the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
+
+```bash
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1721526572.886302   78332 config.cc:230] gRPC experiments enabled: call_status_override_on_cancellation, event_engine_dns, event_engine_listener, http2_stats_fix, monitoring_experiment, pick_first_new, trace_record_callops, work_serializer_clears_time_cache
+I0000 00:00:1721526573.143589   78363 subchannel.cc:806] subchannel 0x7f4010001890 {address=ipv6:%5B::1%5D:58713, args={grpc.client_channel_factory=0x2ae79b0, grpc.default_authority=localhost:58713, grpc.internal.channel_credentials=0x297dda0, grpc.internal.client_channel_call_destination=0x7f407f3b23d0, grpc.internal.event_engine=0x7f4010013870, grpc.internal.security_connector=0x7f40100140e0, grpc.internal.subchannel_pool=0x21d3d00, grpc.max_receive_message_length=-1, grpc.max_send_message_length=-1, grpc.primary_user_agent=grpc-python/1.65.1, grpc.resource_quota=0x2a99310, grpc.server_uri=dns:///localhost:58713}}: connect failed (UNKNOWN:Failed to connect to remote host: connect: Connection refused (111) {created_time:"2024-07-21T11:49:33.143192444+10:00"}), backing off for 1000 ms
 ```
 
 ### More Examples
