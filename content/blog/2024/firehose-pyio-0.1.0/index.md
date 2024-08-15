@@ -2,7 +2,7 @@
 title: Firehose PyIO Connector 0.1.0
 date: 2024-07-19
 draft: false
-featured: true
+featured: false
 comment: false
 toc: false
 reward: false
