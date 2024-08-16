@@ -1,6 +1,6 @@
 ---
 title: Introduction to SQS PyIO Connector
-date: 2024-08-21
+date: 2024-08-19
 draft: false
 featured: true
 comment: false

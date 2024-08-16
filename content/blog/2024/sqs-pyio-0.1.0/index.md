@@ -1,6 +1,6 @@
 ---
 title: SQS PyIO Connector 0.1.0
-date: 2024-08-21
+date: 2024-08-20
 draft: false
 featured: false
 comment: false
