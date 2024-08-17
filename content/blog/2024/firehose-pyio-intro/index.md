@@ -24,7 +24,7 @@ images: []
 
 <!--more-->
 
-## Usage
+## Installation
 
 The connector can be installed from PyPI.
 
@@ -32,17 +32,21 @@ The connector can be installed from PyPI.
 pip install firehose_pyio
 ```
 
+## Usage
+
+### Sink Connector
+
 It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
 - Each `PutRecordBatch` request supports up to 500 records. Each record in the request can be as large as 1,000 KB (before base64 encoding), up to a limit of 4 MB for the entire request. These limits cannot be changed.
 
-The transform also has options that control individual records or handling failed records.
+The transform also has options that control individual records and handle failed records.
 
-- _jsonify_ - A flag that indicates whether to convert a record into Json. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
+- _jsonify_ - A flag that indicates whether to convert a record into JSON. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
 - _multiline_ - A flag that indicates whether to add a new line character (`\n`) to each record. It is useful to save records into a _CSV_ or _Jsonline_ file.
 - _max_trials_ - The maximum number of trials when there is one or more failed records - it defaults to 3. Note that failed records after all trials are returned, which allows users to determine how to handle them subsequently.
 
-### Example
+#### Sink Connector Example
 
 The example shows how to put records to a Firehose delivery stream that delivers data into an S3 bucket. We first need to create a delivery stream and related resources using the following Python script. The source can be found in the [**examples**](https://github.com/beam-pyio/firehose_pyio/tree/main/examples) folder of the connector repository.
 
@@ -126,7 +130,7 @@ The pipeline begins with creating sample elements where each element is a dictio
 - `DatetimeToStr` - It converts the `created_at` attribute values into string because the Python `datetime` class cannot be converted into Json by default.
 - `BatchElements` - It batches the elements into the minimum batch size of 50. It prevents the individual dictionary element from being pushed into the `WriteToFirehose` transform.
 
-In the `WriteToFirehose` transform, it is configured that individual records are converted into Json (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as Jsonline.
+In the `WriteToFirehose` transform, it is configured that individual records are converted into JSON (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as JSONLines.
 
 ```python
 # examples/pipeline.py
@@ -273,7 +277,7 @@ Key - 2024/07/21/01/firehose-pyio-test-1-2024-07-21-01-49-51-5fd0fc8d-b656-4f7b-
 ...
 ```
 
-Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrad the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
+Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrade the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
 
 ```bash
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
@@ -281,7 +285,7 @@ I0000 00:00:1721526572.886302   78332 config.cc:230] gRPC experiments enabled: c
 I0000 00:00:1721526573.143589   78363 subchannel.cc:806] subchannel 0x7f4010001890 {address=ipv6:%5B::1%5D:58713, args={grpc.client_channel_factory=0x2ae79b0, grpc.default_authority=localhost:58713, grpc.internal.channel_credentials=0x297dda0, grpc.internal.client_channel_call_destination=0x7f407f3b23d0, grpc.internal.event_engine=0x7f4010013870, grpc.internal.security_connector=0x7f40100140e0, grpc.internal.subchannel_pool=0x21d3d00, grpc.max_receive_message_length=-1, grpc.max_send_message_length=-1, grpc.primary_user_agent=grpc-python/1.65.1, grpc.resource_quota=0x2a99310, grpc.server_uri=dns:///localhost:58713}}: connect failed (UNKNOWN:Failed to connect to remote host: connect: Connection refused (111) {created_time:"2024-07-21T11:49:33.143192444+10:00"}), backing off for 1000 ms
 ```
 
-### More Examples
+#### More Sink Connector Examples
 
 More usage examples can be found in the [unit testing cases](https://github.com/beam-pyio/firehose_pyio/blob/main/tests/io_test.py). Some of them are covered here.
 
@@ -299,7 +303,7 @@ def test_write_to_firehose_with_unsupported_types(self):
             )
 ```
 
-2. Jsonify the element if it is not of the bytes, bytearray or file-like object. In this example, the second element is a list of integers, and it should be converted into Json (`jsonify=True`). Or we can convert it into string manually.
+2. Jsonify the element if it is not of the bytes, bytearray or file-like object. In this example, the second element is a list of integers, and it should be converted into JSON (`jsonify=True`). Or we can convert it into string manually.
 
 ```python
 def test_write_to_firehose_with_list_elements(self):
@@ -335,7 +339,7 @@ def test_write_to_firehose_with_tuple_elements(self):
     )
 ```
 
-4. We can batch an element if it is not of the supported types. Note that, a new line character (`\n`) is appended to each record, and it is particularly useful for saving a CSV or Jsonline file to S3.
+4. We can batch an element if it is not of the supported types. Note that, a new line character (`\n`) is appended to each record, and it is particularly useful for saving a CSV or JSONLines file to S3.
 
 ```python
 def test_write_to_firehose_with_list_multilining(self):

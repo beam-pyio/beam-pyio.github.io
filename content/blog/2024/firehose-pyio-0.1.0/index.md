@@ -2,7 +2,7 @@
 title: Firehose PyIO Connector 0.1.0
 date: 2024-07-19
 draft: false
-featured: true
+featured: false
 comment: false
 toc: false
 reward: false
@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-We are happy to present the first release of Firehose PyIO Connector.
+We are happy to present the first release of the [Apache Beam Python I/O connector for Amazon Data Firehose](https://github.com/beam-pyio/firehose_pyio).
 
 ✨NEW
 
@@ -29,6 +29,7 @@ We are happy to present the first release of Firehose PyIO Connector.
 
 <!--more-->
 
+- Provide options that control individual records and handle failed records.
 - Create a dedicated pipeline option (`FirehoseOptions`) that reads AWS related values (e.g. `aws_access_key_id`) from pipeline arguments.
 - Implement metric objects that record the total, succeeded and failed elements counts.
 - Add unit and integration testing cases. The [moto](https://github.com/getmoto/moto) and [localstack-utils](https://docs.localstack.cloud/user-guide/tools/testing-utils/) packages are used for unit and integration testing respectively. Also, a custom test client is created for testing retry of failed elements, which is not supported by the moto package.
