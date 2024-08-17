@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The Apache Beam Python I/O connector for Amazon SQS (`sqs_pyio`) aims to integrate with the queue service by supporting a source and sinke connectors. Currently a sink connector is available.
+[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The Apache Beam Python I/O connector for Amazon SQS (`sqs_pyio`) aims to integrate with the queue service by supporting a source and sink connectors. Currently, a sink connector is available.
 
 <!--more-->
 
@@ -38,7 +38,7 @@ pip install sqs_pyio
 
 It has the main composite transform ([`WriteToSqs`](https://beam-pyio.github.io/sqs_pyio/autoapi/sqs_pyio/io/index.html#sqs_pyio.io.WriteToSqs)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a SQS queue using the [`send_message_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/send_message_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
-- Each `SendMessageBatch` request supports up to 10 messages. The maximum allowed individual message size and the maximum total payload size (the sum of the individual lengths of all of the batched messages) are both 256 KiB (262,144 bytes).
+- Each `SendMessageBatch` request supports up to 10 messages. The maximum allowed individual message size and the maximum total payload size (the sum of the individual lengths of all the batched messages) are both 256 KiB (262,144 bytes).
 
 The transform also has options that handle failed records as listed below.
 
@@ -51,7 +51,7 @@ As mentioned earlier, failed elements are returned by a tagged output where it i
 
 The example shows how to send messages in batch to a SQS queue using the sink connector and check the approximate number of messages in the queue. The source can be found in the [**examples**](https://github.com/beam-pyio/sqs_pyio/tree/main/examples) folder of the connector repository.
 
-The pipeline begins with creating sample elements where each element is a dictionary that has the `Id` and `MessageBody` attributes. Then, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 10. It prevents the individual dictionary element from being pushed into the `WriteToSqs` transform. Also it allows us to bypass the API limitation. Finally, in the `WriteToSqs` transform, it is configured that a maximum of three trials are made when there are failed elements (`max_trials=3`) and error details are appended to failed elements (`append_error=True`).
+The pipeline begins with creating sample elements where each element is a dictionary that has the `Id` and `MessageBody` attributes. Then, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 10. It prevents the individual dictionary element from being pushed into the `WriteToSqs` transform. Also, it allows us to bypass the API limitation. Finally, in the `WriteToSqs` transform, it is configured that a maximum of three trials are made when there are failed elements (`max_trials=3`) and error details are appended to failed elements (`append_error=True`).
 
 ```python
 import argparse
@@ -204,7 +204,7 @@ INFO:root:BatchElements statistics: element_count=100 batch_count=10 next_batch_
 >> purge existing messages...
 ```
 
-Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrad the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
+Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrade the package version to avoid those messages (e.g. `pip install grpcio==1.64.1`).
 
 ```bash
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
@@ -227,7 +227,7 @@ def test_write_to_sqs_with_unsupported_record_type(self):
             (p | beam.Create(records) | WriteToSqs(queue_name=self.queue_name))
 ```
 
-2. Both the list and tuple types are supported. Note the main output is tagged as *None* and we can check the elements by specifying the tag value (i.e. `output[None]`).
+2. Both the list and tuple types are supported. Note the main output is tagged as *None*, and we can check the elements by specifying the tag value (i.e. `output[None]`).
 
 ```python
 def test_write_to_sqs_with_list_element(self):
@@ -247,7 +247,7 @@ def test_write_to_sqs_with_tuple_element(self):
         assert_that(output[None], equal_to([]))
 ```
 
-3. The `Id` and `MessageBody` attributes are mandatory and they should be the string type.
+3. The `Id` and `MessageBody` attributes are mandatory, and they should be the string type.
 
 ```python
 def test_write_to_sqs_with_incorrect_message_data_type(self):
@@ -353,16 +353,15 @@ class TestRetryLogic(unittest.TestCase):
                 output[self.failed_output],
                 equal_to(
                     [
-                        {
-                            "Id": "3",
-                            "MessageBody": "3",
-                            "error": {
+                        (
+                            {"Id": "3", "MessageBody": "3"},
+                            {
                                 "Id": "3",
                                 "SenderFault": False,
                                 "Code": "error-code",
                                 "Message": "error-message",
                             },
-                        }
+                        ),
                     ]
                 ),
             )

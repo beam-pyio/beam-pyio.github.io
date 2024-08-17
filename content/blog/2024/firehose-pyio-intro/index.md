@@ -42,7 +42,7 @@ It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.githu
 
 The transform also has options that control individual records and handle failed records.
 
-- _jsonify_ - A flag that indicates whether to convert a record into Json. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
+- _jsonify_ - A flag that indicates whether to convert a record into JSON. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
 - _multiline_ - A flag that indicates whether to add a new line character (`\n`) to each record. It is useful to save records into a _CSV_ or _Jsonline_ file.
 - _max_trials_ - The maximum number of trials when there is one or more failed records - it defaults to 3. Note that failed records after all trials are returned, which allows users to determine how to handle them subsequently.
 
@@ -130,7 +130,7 @@ The pipeline begins with creating sample elements where each element is a dictio
 - `DatetimeToStr` - It converts the `created_at` attribute values into string because the Python `datetime` class cannot be converted into Json by default.
 - `BatchElements` - It batches the elements into the minimum batch size of 50. It prevents the individual dictionary element from being pushed into the `WriteToFirehose` transform.
 
-In the `WriteToFirehose` transform, it is configured that individual records are converted into Json (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as Jsonline.
+In the `WriteToFirehose` transform, it is configured that individual records are converted into JSON (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as JSONLines.
 
 ```python
 # examples/pipeline.py
@@ -277,7 +277,7 @@ Key - 2024/07/21/01/firehose-pyio-test-1-2024-07-21-01-49-51-5fd0fc8d-b656-4f7b-
 ...
 ```
 
-Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrad the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
+Note that the following warning messages are printed if it installs the grpcio (1.65.x) package (see this [GitHub issue](https://github.com/grpc/grpc/issues/37178)). You can downgrade the package version to avoid those messages (eg `pip install grpcio==1.64.1`).
 
 ```bash
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
@@ -303,7 +303,7 @@ def test_write_to_firehose_with_unsupported_types(self):
             )
 ```
 
-2. Jsonify the element if it is not of the bytes, bytearray or file-like object. In this example, the second element is a list of integers, and it should be converted into Json (`jsonify=True`). Or we can convert it into string manually.
+2. Jsonify the element if it is not of the bytes, bytearray or file-like object. In this example, the second element is a list of integers, and it should be converted into JSON (`jsonify=True`). Or we can convert it into string manually.
 
 ```python
 def test_write_to_firehose_with_list_elements(self):
@@ -339,7 +339,7 @@ def test_write_to_firehose_with_tuple_elements(self):
     )
 ```
 
-4. We can batch an element if it is not of the supported types. Note that, a new line character (`\n`) is appended to each record, and it is particularly useful for saving a CSV or Jsonline file to S3.
+4. We can batch an element if it is not of the supported types. Note that, a new line character (`\n`) is appended to each record, and it is particularly useful for saving a CSV or JSONLines file to S3.
 
 ```python
 def test_write_to_firehose_with_list_multilining(self):
