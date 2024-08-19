@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The Apache Beam Python I/O connector for Amazon SQS (`sqs_pyio`) aims to integrate with the queue service by supporting a source and sink connectors. Currently, the sink connector is available.
+[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The Apache Beam Python I/O connector for Amazon SQS (`sqs_pyio`) aims to integrate with the queue service by supporting source and sink connectors. Currently, the sink connector is available.
 
 <!--more-->
 
