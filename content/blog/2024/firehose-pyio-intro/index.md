@@ -40,11 +40,14 @@ It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.githu
 
 - Each `PutRecordBatch` request supports up to 500 records. Each record in the request can be as large as 1,000 KB (before base64 encoding), up to a limit of 4 MB for the entire request. These limits cannot be changed.
 
-The transform also has options that control individual records and handle failed records.
+The transform also has options that control individual records as well as handle failed records.
 
 - _jsonify_ - A flag that indicates whether to convert a record into JSON. Note that a record should be of _bytes_, _bytearray_ or file-like object, and, if it is not of a supported type (e.g. integer), we can convert it into a Json string by specifying this flag to _True_.
 - _multiline_ - A flag that indicates whether to add a new line character (`\n`) to each record. It is useful to save records into a _CSV_ or _Jsonline_ file.
-- _max_trials_ - The maximum number of trials when there is one or more failed records - it defaults to 3. Note that failed records after all trials are returned, which allows users to determine how to handle them subsequently.
+- *max_trials* - The maximum number of trials when there is one or more failed records - it defaults to 3. Note that failed records after all trials are returned, which allows users to determine how to handle them subsequently.
+- *append_error* - Whether to append error details to failed records. Defaults to True.
+
+As mentioned earlier, failed elements are returned by a tagged output where it is named as `write-to-firehose-failed-output` by default. You can change the name by specifying a different name using the `failed_output` argument.
 
 #### Sink Connector Example
 
@@ -294,12 +297,16 @@ More usage examples can be found in the [unit testing cases](https://github.com/
 ```python
 def test_write_to_firehose_with_unsupported_types(self):
     # only the list type is supported!
-    with self.assertRaises(TypeError):
+    with self.assertRaises(FirehoseClientError):
         with TestPipeline(options=self.pipeline_opts) as p:
             (
                 p
                 | beam.Create(["one", "two", "three", "four"])
-                | WriteToFirehose(self.delivery_stream_name, True, False)
+                | WriteToFirehose(
+                    delivery_stream_name=self.delivery_stream_name,
+                    jsonify=False,
+                    multiline=False,
+                )
             )
 ```
 
@@ -311,9 +318,13 @@ def test_write_to_firehose_with_list_elements(self):
         output = (
             p
             | beam.Create([["one", "two", "three", "four"], [1, 2, 3, 4]])
-            | WriteToFirehose(self.delivery_stream_name, True, False)
+            | WriteToFirehose(
+                delivery_stream_name=self.delivery_stream_name,
+                jsonify=True,
+                multiline=False,
+            )
         )
-        assert_that(output, equal_to([]))
+        assert_that(output[None], equal_to([]))
 
     bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
     self.assertSetEqual(
@@ -329,9 +340,13 @@ def test_write_to_firehose_with_tuple_elements(self):
         output = (
             p
             | beam.Create([(1, ["one", "two", "three", "four"]), (2, [1, 2, 3, 4])])
-            | WriteToFirehose(self.delivery_stream_name, True, False)
+            | WriteToFirehose(
+                delivery_stream_name=self.delivery_stream_name,
+                jsonify=True,
+                multiline=False,
+            )
         )
-        assert_that(output, equal_to([]))
+        assert_that(output[None], equal_to([]))
 
     bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
     self.assertSetEqual(
@@ -348,9 +363,13 @@ def test_write_to_firehose_with_list_multilining(self):
             p
             | beam.Create(["one", "two", "three", "four"])
             | BatchElements(min_batch_size=2, max_batch_size=2)
-            | WriteToFirehose(self.delivery_stream_name, False, True)
+            | WriteToFirehose(
+                delivery_stream_name=self.delivery_stream_name,
+                jsonify=False,
+                multiline=True,
+            )
         )
-        assert_that(output, equal_to([]))
+        assert_that(output[None], equal_to([]))
 
     bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
     self.assertSetEqual(set(bucket_contents), set(["one\ntwo\n", "three\nfour\n"]))
@@ -361,26 +380,78 @@ def test_write_to_firehose_with_tuple_multilining(self):
             p
             | beam.Create([(1, "one"), (2, "three"), (1, "two"), (2, "four")])
             | GroupIntoBatches(batch_size=2)
-            | WriteToFirehose(self.delivery_stream_name, False, True)
+            | WriteToFirehose(
+                delivery_stream_name=self.delivery_stream_name,
+                jsonify=False,
+                multiline=True,
+            )
         )
-        assert_that(output, equal_to([]))
+        assert_that(output[None], equal_to([]))
 
     bucket_contents = collect_bucket_contents(self.s3_client, self.bucket_name)
     self.assertSetEqual(set(bucket_contents), set(["one\ntwo\n", "three\nfour\n"]))
 ```
 
-5. Failed records after all trials are returned. The following example configures only a single record is saved successfully into a delivery stream in each trial for 3 times. After all trials, the failed record (`four`) is returned from the `WriteToFirehose` transform. It is up to the user how to handle failed records.
+5. Failed records after all trials are returned by a tagged output. We can configure the number of trials (`max_trials`) and whether to append error details (`append_error`).
 
 ```python
-def test_write_to_firehose_retry_with_failed_elements(self):
-    with TestPipeline() as p:
-        output = (
-            p
-            | beam.Create(["one", "two", "three", "four"])
-            | BatchElements(min_batch_size=4)
-            | WriteToFirehose(
-                "non-existing-delivery-stream", False, False, 3, {"num_success": 1}
+class TestRetryLogic(unittest.TestCase):
+    # default failed output name
+    failed_output = "write-to-firehose-failed-output"
+
+    def test_write_to_firehose_retry_with_no_failed_element(self):
+        with TestPipeline() as p:
+            output = (
+                p
+                | beam.Create(["one", "two", "three", "four"])
+                | BatchElements(min_batch_size=4)
+                | WriteToFirehose(
+                    delivery_stream_name="non-existing-delivery-stream",
+                    jsonify=False,
+                    multiline=False,
+                    max_trials=3,
+                    append_error=False,
+                    fake_config={"num_success": 2},
+                )
             )
-        )
-        assert_that(output, equal_to(["four"]))
+            assert_that(output[self.failed_output], equal_to([]))
+
+    def test_write_to_firehose_retry_failed_element_without_appending_error(self):
+        with TestPipeline() as p:
+            output = (
+                p
+                | beam.Create(["one", "two", "three", "four"])
+                | BatchElements(min_batch_size=4)
+                | WriteToFirehose(
+                    delivery_stream_name="non-existing-delivery-stream",
+                    jsonify=False,
+                    multiline=False,
+                    max_trials=3,
+                    append_error=False,
+                    fake_config={"num_success": 1},
+                )
+            )
+            assert_that(output[self.failed_output], equal_to(["four"]))
+
+    def test_write_to_firehose_retry_failed_element_with_appending_error(self):
+        with TestPipeline() as p:
+            output = (
+                p
+                | beam.Create(["one", "two", "three", "four"])
+                | BatchElements(min_batch_size=4)
+                | WriteToFirehose(
+                    delivery_stream_name="non-existing-delivery-stream",
+                    jsonify=False,
+                    multiline=False,
+                    max_trials=3,
+                    append_error=True,
+                    fake_config={"num_success": 1},
+                )
+            )
+            assert_that(
+                output[self.failed_output],
+                equal_to(
+                    [("four", {"ErrorCode": "Error", "ErrorMessage": "This error"})]
+                ),
+            )
 ```

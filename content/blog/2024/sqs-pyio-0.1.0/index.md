@@ -30,6 +30,8 @@ We are happy to present the first release of the [Apache Beam Python I/O connect
 <!--more-->
 
 - Provide options that handle failed records.
+  - _max_trials_ - The maximum number of trials when there is one or more failed records.
+  - _append_error_ - Whether to append error details to failed records.
 - Return failed elements by a tagged output, which allows users to determine how to handle them subsequently.
 - Create a dedicated pipeline option (`SqsOptions`) that reads AWS related values (e.g. `aws_access_key_id`) from pipeline arguments.
 - Implement metric objects that record the total, succeeded and failed elements counts.
