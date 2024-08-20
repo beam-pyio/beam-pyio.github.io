@@ -1,5 +1,5 @@
 ---
-title: Firehose PyIO Connector 0.2.0
+title: Firehose PyIO Connector 0.2.1
 date: 2024-08-22
 draft: false
 featured: false
