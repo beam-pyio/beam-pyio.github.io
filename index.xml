@@ -1,4 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title/><link>/</link><description>Recent content on</description><generator>Hugo -- gohugo.io</generator><language>en</language><copyright/><lastBuildDate>Tue, 20 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>SQS PyIO Connector 0.1.0</title><link>/blog/2024/sqs-pyio-0.1.0/</link><pubDate>Tue, 20 Aug 2024 00:00:00 +0000</pubDate><guid>/blog/2024/sqs-pyio-0.1.0/</guid><description><![CDATA[<p>We are happy to present the first release of the <a href="https://github.com/beam-pyio/sqs_pyio" target="_blank" rel="noopener noreferrer">Apache Beam Python I/O connector for Amazon SQS<i class="fas fa-external-link-square-alt ms-1"></i></a>.</p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title/><link>/</link><description>Recent content on</description><generator>Hugo -- gohugo.io</generator><language>en</language><copyright/><lastBuildDate>Thu, 22 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Firehose PyIO Connector 0.2.0</title><link>/blog/2024/firehose-pyio-0.2.0/</link><pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate><guid>/blog/2024/firehose-pyio-0.2.0/</guid><description><![CDATA[<p>We are happy to present the <a href="https://github.com/beam-pyio/firehose_pyio" target="_blank" rel="noopener noreferrer">Apache Beam Python I/O connector for Amazon Data Firehose<i class="fas fa-external-link-square-alt ms-1"></i></a> 0.2.0 release.</p>
+<p>♻️UPDATE</p>
+<ul>
+<li>Return failed elements by a tagged output, which allows users to determine how to handle them subsequently.</li>
+<li>Provide options that handle failed records.
+<ul>
+<li><em>max_trials</em> - The maximum number of trials when there is one or more failed records.</li>
+<li><em>append_error</em> - Whether to append error details to failed records.</li>
+</ul>
+</li>
+</ul>]]></description></item><item><title>SQS PyIO Connector 0.1.0</title><link>/blog/2024/sqs-pyio-0.1.0/</link><pubDate>Tue, 20 Aug 2024 00:00:00 +0000</pubDate><guid>/blog/2024/sqs-pyio-0.1.0/</guid><description><![CDATA[<p>We are happy to present the first release of the <a href="https://github.com/beam-pyio/sqs_pyio" target="_blank" rel="noopener noreferrer">Apache Beam Python I/O connector for Amazon SQS<i class="fas fa-external-link-square-alt ms-1"></i></a>.</p>
 <p>✨NEW</p>
 <ul>
 <li>Add a composite transform (<code>WriteToSqs</code>) that sends messages to a SQS queue in batch, using the <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/send_message_batch.html" target="_blank" rel="noopener noreferrer"><code>send_message_batch</code><i class="fas fa-external-link-square-alt ms-1"></i></a> method of the boto3 package.</li>
