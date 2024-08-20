@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-We are happy to present the [Apache Beam Python I/O connector for Amazon Data Firehose](https://github.com/beam-pyio/firehose_pyio) 0.2.0 release.
+We are happy to present the [Apache Beam Python I/O connector for Amazon Data Firehose](https://github.com/beam-pyio/firehose_pyio) 0.2.1 release.
 
 ♻️UPDATE
 
