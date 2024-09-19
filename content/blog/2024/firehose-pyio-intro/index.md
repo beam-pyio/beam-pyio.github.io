@@ -36,7 +36,7 @@ pip install firehose_pyio
 
 ### Sink Connector
 
-It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
+It has the main composite transform ([`WriteToFirehose`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/io/index.html#firehose_pyio.io.WriteToFirehose)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the records of the element are sent into a Firehose delivery stream using the [`put_record_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose/client/put_record_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
 - Each `PutRecordBatch` request supports up to 500 records. Each record in the request can be as large as 1,000 KB (before base64 encoding), up to a limit of 4 MB for the entire request. These limits cannot be changed.
 
@@ -54,7 +54,7 @@ As mentioned earlier, failed elements are returned by a tagged output where it i
 The example shows how to put records to a Firehose delivery stream that delivers data into an S3 bucket. We first need to create a delivery stream and related resources using the following Python script. The source can be found in the [**examples**](https://github.com/beam-pyio/firehose_pyio/tree/main/examples) folder of the connector repository.
 
 ```python
-# examples/create_resources.py
+# create_resources.py
 import json
 import boto3
 from botocore.exceptions import ClientError
@@ -136,7 +136,7 @@ The pipeline begins with creating sample elements where each element is a dictio
 In the `WriteToFirehose` transform, it is configured that individual records are converted into JSON (`jsonify=True`) as well as a new line character is appended (`multiline=True`). The former is required because the Python dictionary is not a supported data type while the latter makes the records are saved as JSONLines.
 
 ```python
-# examples/pipeline.py
+# pipeline.py
 import argparse
 import datetime
 import random
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     print_bucket_contents(BUCKET_NAME)
 ```
 
-We can run the pipeline on any runner that supports the Python SDK. Below shows an example of running the example pipeline on the Apache Flink Runner. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments because the package has a dedicated pipeline option ([`FirehoseOptions`](https://github.com/beam-pyio/firehose_pyio/blob/main/src/firehose_pyio/options.py#L21)) that parses them. Once the pipeline runs successfully, the script continues to read the contents of the file object(s) that are created by the connector.
+We can run the pipeline on any runner that supports the Python SDK. Below shows an example of running the example pipeline on the Apache Flink Runner. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments because the package has a dedicated pipeline option ([`FirehoseOptions`](https://beam-pyio.github.io/firehose_pyio/autoapi/firehose_pyio/options/)) that parses them. Once the pipeline runs successfully, the script continues to read the contents of the file object(s) that are created by the connector.
 
 ```bash
 python examples/pipeline.py \

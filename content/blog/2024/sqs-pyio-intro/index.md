@@ -36,7 +36,7 @@ pip install sqs_pyio
 
 ### Sink Connector
 
-It has the main composite transform ([`WriteToSqs`](https://beam-pyio.github.io/sqs_pyio/autoapi/sqs_pyio/io/index.html#sqs_pyio.io.WriteToSqs)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the element is sent into a SQS queue using the [`send_message_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/send_message_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
+It has the main composite transform ([`WriteToSqs`](https://beam-pyio.github.io/sqs_pyio/autoapi/sqs_pyio/io/index.html#sqs_pyio.io.WriteToSqs)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the records of the element are sent into a SQS queue using the [`send_message_batch`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/send_message_batch.html) method of the boto3 package. Note that the above batch transforms can also be useful to overcome the API limitation listed below.
 
 - Each `SendMessageBatch` request supports up to 10 messages. The maximum allowed individual message size and the maximum total payload size (the sum of the individual lengths of all the batched messages) are both 256 KiB (262,144 bytes).
 
@@ -49,11 +49,12 @@ As mentioned earlier, failed elements are returned by a tagged output where it i
 
 #### Sink Connector Example
 
-The example shows how to send messages in batch to a SQS queue using the sink connector and check the approximate number of messages in the queue. The source can be found in the [**examples**](https://github.com/beam-pyio/sqs_pyio/tree/main/examples) folder of the connector repository.
+The example shows how to send messages in batch to a SQS queue using the sink connector and check the approximate number of messages in the queue. The source can be found in the [**examples**](https://github.com/beam-pyio/sqs_pyio/tree/main/examples/pipeline.py) folder of the connector repository.
 
 The pipeline begins with creating sample elements where each element is a dictionary that has the `Id` and `MessageBody` attributes. Then, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 10. It prevents the individual dictionary element from being pushed into the `WriteToSqs` transform. Also, it allows us to bypass the API limitation. Finally, in the `WriteToSqs` transform, it is configured that a maximum of three trials are made when there are failed elements (`max_trials=3`) and error details are appended to failed elements (`append_error=True`).
 
 ```python
+# pipeline.py
 import argparse
 import time
 import logging
@@ -156,7 +157,7 @@ if __name__ == "__main__":
     purge_queue(QUEUE_NAME)
 ```
 
-We can run the pipeline on any runner that supports the Python SDK. Below shows an example of running the example pipeline on the Apache Flink Runner. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments because the package has a dedicated pipeline option ([`SqsOptions`](https://github.com/beam-pyio/sqs_pyio/blob/main/src/sqs_pyio/options.py#L21)) that parses them. Once the pipeline runs successfully, the script checks the approximate number of messages that are created by the connector.
+We can run the pipeline on any runner that supports the Python SDK. Below shows an example of running the example pipeline on the Apache Flink Runner. Note that AWS related values (e.g. `aws_access_key_id`) can be specified as pipeline arguments because the package has a dedicated pipeline option ([`SqsOptions`](https://beam-pyio.github.io/sqs_pyio/autoapi/sqs_pyio/options/)) that parses them. Once the pipeline runs successfully, the script checks the approximate number of messages that are created by the connector.
 
 ```bash
 python examples/pipeline.py \
@@ -200,7 +201,7 @@ I0000 00:00:1721526573.143589   78363 subchannel.cc:806] subchannel 0x7f40100018
 
 More usage examples can be found in the [unit testing cases](https://github.com/beam-pyio/sqs_pyio/blob/main/tests/io_test.py). Some of them are covered here.
 
-1. Only the list or tuple types are supported *PCollection* elements. In the following example, individual string elements are applied in the `WriteToFirehose`, and it raises the `SqsClientError`.
+1. Only the list or tuple types are supported *PCollection* elements. In the following example, individual dictionary elements are applied in the `WriteToSqs`, and it raises the `SqsClientError`.
 
 ```python
 def test_write_to_sqs_with_unsupported_record_type(self):
