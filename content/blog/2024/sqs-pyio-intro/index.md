@@ -1,5 +1,5 @@
 ---
-title: Introduction to SQS PyIO Connector
+title: Introduction to SQS PyIO Sink Connector
 date: 2024-08-19
 draft: false
 featured: true
@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The Apache Beam Python I/O connector for Amazon SQS (`sqs_pyio`) aims to integrate with the queue service by supporting source and sink connectors. Currently, the sink connector is available.
+[Amazon Simple Queue Service (Amazon SQS)](https://aws.amazon.com/sqs/) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. The [Apache Beam Python I/O connector for Amazon SQS](https://github.com/beam-pyio/sqs_pyio) (`sqs_pyio`) aims to integrate with the queue service by supporting source and sink connectors. Currently, the sink connector is available.
 
 <!--more-->
 
@@ -51,7 +51,7 @@ As mentioned earlier, failed elements are returned by a tagged output where it i
 
 The example shows how to send messages in batch to a SQS queue using the sink connector and check the approximate number of messages in the queue. The source can be found in the [**examples**](https://github.com/beam-pyio/sqs_pyio/tree/main/examples/pipeline.py) folder of the connector repository.
 
-The pipeline begins with creating sample elements where each element is a dictionary that has the `Id` and `MessageBody` attributes. Then, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 10. It prevents the individual dictionary element from being pushed into the `WriteToSqs` transform. Also, it allows us to bypass the API limitation. Finally, in the `WriteToSqs` transform, it is configured that a maximum of three trials are made when there are failed elements (`max_trials=3`) and error details are appended to failed elements (`append_error=True`).
+The pipeline begins with creating sample elements where each element is a dictionary that has the `Id` and `MessageBody` attributes. Then, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 10. Note that it prevents the individual dictionary element from being pushed into the `WriteToSqs` transform as well as it allows us to bypass the API limitation. Finally, in the `WriteToSqs` transform, it is configured that a maximum of three trials are made when there are failed elements (`max_trials=3`) and error details are appended to failed elements (`append_error=True`).
 
 ```python
 # pipeline.py

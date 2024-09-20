@@ -1,5 +1,5 @@
 ---
-title: Introduction to Firehose PyIO Connector
+title: Introduction to Firehose PyIO Sink Connector
 date: 2024-07-18
 draft: false
 featured: true
@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-[Amazon Data Firehose](https://aws.amazon.com/firehose/) is a fully managed service for delivering real-time streaming data to destinations such as Amazon Simple Storage Service (Amazon S3), Amazon Redshift, Amazon OpenSearch Service and Amazon OpenSearch Serverless. The Apache Beam Python I/O connector for Amazon Data Firehose (`firehose_pyio`) provides a data sink feature that facilitates integration with those services.
+[Amazon Data Firehose](https://aws.amazon.com/firehose/) is a fully managed service for delivering real-time streaming data to destinations such as Amazon Simple Storage Service (Amazon S3), Amazon Redshift, Amazon OpenSearch Service and Amazon OpenSearch Serverless. The [Apache Beam Python I/O connector for Amazon Data Firehose](https://github.com/beam-pyio/firehose_pyio) (`firehose_pyio`) provides a data sink feature that facilitates integration with those services.
 
 <!--more-->
 

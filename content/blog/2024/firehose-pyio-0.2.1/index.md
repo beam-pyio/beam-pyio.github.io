@@ -31,4 +31,4 @@ We are happy to present the [Apache Beam Python I/O connector for Amazon Data Fi
 
 <!--more-->
 
-See [this post](/blog/2024/firehose-pyio-intro/) for more examples.
+See [Introduction to Firehose PyIO Sink Connector](/blog/2024/firehose-pyio-intro/) for more examples.

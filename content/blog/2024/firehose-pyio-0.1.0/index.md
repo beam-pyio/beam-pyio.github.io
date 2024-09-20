@@ -36,4 +36,4 @@ We are happy to present the first release of the [Apache Beam Python I/O connect
 - Implement metric objects that record the total, succeeded and failed elements counts.
 - Add unit and integration testing cases. The [moto](https://github.com/getmoto/moto) and [localstack-utils](https://docs.localstack.cloud/user-guide/tools/testing-utils/) packages are used for unit and integration testing respectively. Also, a custom test client is created for testing retry of failed elements, which is not supported by the moto package.
 
-See [this post](/blog/2024/firehose-pyio-intro/) for more examples.
+See [Introduction to Firehose PyIO Sink Connector](/blog/2024/firehose-pyio-intro/) for more examples.

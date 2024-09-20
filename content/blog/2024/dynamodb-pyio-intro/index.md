@@ -1,5 +1,5 @@
 ---
-title: Introduction to DynamoDB PyIO Connector
+title: Introduction to DynamoDB PyIO Sink Connector
 date: 2024-09-23
 draft: true
 featured: true
@@ -20,7 +20,7 @@ images: []
 # description: To be updated...
 ---
 
-[Amazon DynamoDB](https://aws.amazon.com/dynamodb/) is a serverless, NoSQL database service that allows you to develop modern applications at any scale. The Apache Beam Python I/O connector for Amazon DynamoDB (`dynamodb_pyio`) aims to integrate with the database service by supporting source and sink connectors. Currently, the sink connector is available.
+[Amazon DynamoDB](https://aws.amazon.com/dynamodb/) is a serverless, NoSQL database service that allows you to develop modern applications at any scale. The [Apache Beam Python I/O connector for Amazon DynamoDB](https://github.com/beam-pyio/dynamodb_pyio) (`dynamodb_pyio`) aims to integrate with the database service by supporting source and sink connectors. Currently, the sink connector is available.
 
 <!--more-->
 
@@ -36,7 +36,7 @@ pip install dynamodb_pyio
 
 ### Sink Connector
 
-It has the main composite transform ([`WriteToDynamoDB`](https://beam-pyio.github.io/dynamodb_pyio/autoapi/dynamodb_pyio/io/index.html#dynamodb_pyio.io.WriteToDynamoDB)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the records of the element are written to a DyanmoDB table with help of the [`batch_writer`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/batch_writer.html) of the boto3 package. Note that the batch writer will automatically handle buffering and sending items in batches. In addition, it will also automatically handle any unprocessed items and resend them as needed.
+It has the main composite transform ([`WriteToDynamoDB`](https://beam-pyio.github.io/dynamodb_pyio/autoapi/dynamodb_pyio/io/index.html#dynamodb_pyio.io.WriteToDynamoDB)), and it expects a list or tuple _PCollection_ element. If the element is a tuple, the tuple's first element is taken. If the element is not of the accepted types, you can apply the [`GroupIntoBatches`](https://beam.apache.org/documentation/transforms/python/aggregation/groupintobatches/) or [`BatchElements`](https://beam.apache.org/releases/pydoc/current/apache_beam.transforms.util.html#apache_beam.transforms.util.BatchElements) transform beforehand. Then, the records of the element are written to a DynamoDB table with help of the [`batch_writer`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/batch_writer.html) of the boto3 package. Note that the batch writer will automatically handle buffering and sending items in batches. In addition, it will also automatically handle any unprocessed items and resend them as needed.
 
 The transform also has an option that handles duplicate records - see the example below for more details.
 
@@ -46,9 +46,9 @@ The transform also has an option that handles duplicate records - see the exampl
 
 The example shows how to write records in batch to a DynamoDB table using the sink connector. The source can be found in the [**examples**](https://github.com/beam-pyio/dynamodb_pyio/tree/main/examples) folder of the connector repository.
 
-The pipeline begins with creating a configurable number records (default 500) where each record has two attributes (`pk` and `sk`). The attribute values are configured so that the first half of the records have incremental values while the remaining half have a single value of 1. Therefore, we can expect only 250 records in the DyanmoDB table if we configure 500 records. Moreover, we do not encounter an error although the half of the records have the same value, thanks to the `dedup_pkeys` option.
+The pipeline begins with creating a configurable number records (default 500) where each record has two attributes (`pk` and `sk`). The attribute values are configured so that the first half of the records have incremental values while the remaining half have a single value of 1. Therefore, as the attributes are the hash and sort key of the table, we can expect only 250 records in the DynamoDB table if we configure 500 records. Moreover, in spite of duplicate values, we do not encounter an error if we specify the `dedup_pkeys` value correctly.
 
-After creating elements, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 100 and 200 respectively. It prevents the individual dictionary element from being pushed into the `WriteToDynamoDB` transform. Finally, the records are written to the DyanmoDB table using the `WriteToDynamoDB` transform while specifying the table name and `dedup_pkeys` option.
+After creating elements, we apply the `BatchElements` transform where the minimum and maximum batch sizes are set to 100 and 200 respectively. Note that it prevents individual dictionary elements from being pushed into the `WriteToDynamoDB` transform. Finally, batches of elements are written to the DynamoDB table using the `WriteToDynamoDB` transform.
 
 ```python
 # pipeline.py
@@ -264,7 +264,7 @@ def test_write_to_dynamodb_with_wrong_data_type(self):
             )
 ```
 
-4. Duplicate records are not allowed unless the `dedup_pkeys` argument is correctly specified.
+4. Duplicate records are not allowed unless the `dedup_pkeys` value is correctly specified.
 
 ```python
 def test_write_to_dynamodb_duplicate_records_without_dedup_keys(self):
@@ -288,7 +288,7 @@ def test_write_to_dynamodb_duplicate_records_with_dedup_keys(self):
     self.assertListEqual(records[:1], scan_table(TableName=self.table_name))
 ```
 
-4. We can control a pipeline further with the `BatchElements` or `GroupIntoBatches` transform.
+4. We can control batches of elements further with the `BatchElements` or `GroupIntoBatches` transform.
 
 ```python
 def test_write_to_dynamodb_with_batch_elements(self):

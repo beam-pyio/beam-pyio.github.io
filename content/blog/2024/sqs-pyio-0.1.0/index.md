@@ -38,4 +38,4 @@ We are happy to present the first release of the [Apache Beam Python I/O connect
 - Add unit and integration testing cases. The [moto](https://github.com/getmoto/moto) and [localstack-utils](https://docs.localstack.cloud/user-guide/tools/testing-utils/) are used for unit and integration testing respectively. Also, a custom test client is created for testing retry behavior, which is not supported by the moto package.
 - Integrate with GitHub Actions by adding workflows for testing, documentation and release management.
 
-See [this post](/blog/2024/sqs-pyio-intro/) for more examples.
+See [Introduction to SQS PyIO Sink Connector](/blog/2024/sqs-pyio-intro/) for more examples.
