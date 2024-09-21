@@ -1,5 +1,5 @@
 ---
-title: DynamoDB PyIO Connector 0.1.0
+title: DynamoDB PyIO Connector 0.1.1
 date: 2024-09-24
 draft: false
 featured: false
