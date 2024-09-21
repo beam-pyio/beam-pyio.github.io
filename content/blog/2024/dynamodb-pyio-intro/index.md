@@ -40,7 +40,7 @@ It has the main composite transform ([`WriteToDynamoDB`](https://beam-pyio.githu
 
 The transform also has an option that handles duplicate records - see the example below for more details.
 
-- *dedup_pkeys* - List of keys to be used for de-duplicating items in buffer.
+- *dedup_pkeys* - List of keys to be used for deduplicating items in buffer.
 
 #### Sink Connector Example
 
@@ -227,7 +227,7 @@ I0000 00:00:1721526573.143589   78363 subchannel.cc:806] subchannel 0x7f40100018
 
 More usage examples can be found in the [unit testing cases](https://github.com/beam-pyio/dynamodb_pyio/blob/main/tests/io_test.py). Some of them are covered here.
 
-1. The transform can process a large number of records, thanks to the batch writer.
+1. The transform can process many records, thanks to the batch writer.
 
 ```python
 def test_write_to_dynamodb_with_large_items(self):

@@ -31,7 +31,7 @@ We are happy to present the first release of the [Apache Beam Python I/O connect
 <!--more-->
 
 - Provide an option that handles duplicate records
-  - *dedup_pkeys* - List of keys to be used for de-duplicating items in buffer.
+  - *dedup_pkeys* - List of keys to be used for deduplicating items in buffer.
 - Create a dedicated pipeline option (`DynamoDBOptions`) that reads AWS related values (e.g. `aws_access_key_id`) from pipeline arguments.
 - Implement a metric object that records the total counts.
 - Add unit and integration testing cases. The [moto](https://github.com/getmoto/moto) and [localstack-utils](https://docs.localstack.cloud/user-guide/tools/testing-utils/) are used for unit and integration testing respectively.
