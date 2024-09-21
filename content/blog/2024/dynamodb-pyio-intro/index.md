@@ -1,7 +1,7 @@
 ---
 title: Introduction to DynamoDB PyIO Sink Connector
 date: 2024-09-23
-draft: true
+draft: false
 featured: true
 comment: false
 toc: false
